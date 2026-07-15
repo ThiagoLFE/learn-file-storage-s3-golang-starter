@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 
@@ -54,9 +55,13 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		respondWithError(w, http.StatusUnauthorized, "You can only update your own videos", err)
 		return
 	}
-	fileMediaType := fileHeader.Header.Get("Content-Type")
+	mediaType, _, err := mime.ParseMediaType(fileHeader.Header.Get("Content-Type"))
 
-	assetPath := getAssetPath(videoID, fileMediaType)
+	assetPath, err := getAssetPath(videoID, mediaType)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "you only can upload image files", err)
+		return
+	}
 	assetDiskPath := cfg.getAssetDiskPath(assetPath)
 
 	dst, err := os.Create(assetDiskPath)

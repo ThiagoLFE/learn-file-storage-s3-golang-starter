@@ -16,9 +16,12 @@ func (cfg apiConfig) ensureAssetsDir() error {
 	return nil
 }
 
-func getAssetPath(videoID uuid.UUID, mediaType string) string {
-	ext := mediaTypeToExt(mediaType)
-	return fmt.Sprintf("%s%s", videoID, ext)
+func getAssetPath(videoID uuid.UUID, mediaType string) (string, error) {
+	ext, err := mediaTypeToExt(mediaType)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s%s", videoID, ext), nil
 }
 
 func (cfg apiConfig) getAssetDiskPath(assetPath string) string {
@@ -29,10 +32,13 @@ func (cfg apiConfig) getAssetURL(assetPath string) string {
 	return fmt.Sprintf("http://localhost:%s/assets/%s", cfg.port, assetPath)
 }
 
-func mediaTypeToExt(mediaType string) string {
+func mediaTypeToExt(mediaType string) (string, error) {
 	parts := strings.Split(mediaType, "/")
 	if len(parts) != 2 {
-		return ".bin"
+		return ".bin", nil
 	}
-	return "." + parts[1]
+	if parts[0] != "image" {
+		return "", fmt.Errorf("you can't upload %s, the file must be an image", parts[0])
+	}
+	return "." + parts[1], nil
 }
