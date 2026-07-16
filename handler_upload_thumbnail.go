@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"mime"
@@ -57,7 +59,13 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	}
 	mediaType, _, err := mime.ParseMediaType(fileHeader.Header.Get("Content-Type"))
 
-	assetPath, err := getAssetPath(videoID, mediaType)
+	fileName := make([]byte, 32)
+	if _, err := rand.Read(fileName); err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Unable to create hash name of file", err)
+		return
+	}
+
+	assetPath, err := getAssetPath(base64.RawURLEncoding.EncodeToString(fileName), mediaType)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "you only can upload image files", err)
 		return
