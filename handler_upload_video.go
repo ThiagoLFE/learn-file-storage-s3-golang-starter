@@ -37,7 +37,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 
 	fmt.Println("uploading thumbnail for video", videoID, "by user", userID)
 
-	const maxMemory = 10 << 30
+	const maxMemory = 1 << 30
 	r.Body = http.MaxBytesReader(w, r.Body, maxMemory)
 
 	if err := r.ParseMultipartForm(maxMemory); err != nil {
